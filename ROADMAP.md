@@ -79,10 +79,10 @@ Bu belge, projeyi gerçek bir fabrika/ERP kullanımına doğru adım adım geli�
 **Motivasyon:** Stok kritik seviyenin altına düştüğünde sistem kendiliğinden uyarı versin veya procurement önersin.
 
 **Yapılacaklar:**
-- [ ] `Product` modeline `min_stock` alanı ekle
-- [ ] `GET /inventory/low-stock` endpoint'i (min_stock altındaki ürünler)
-- [ ] `check_reorder_points()` servis fonksiyonu
-- [ ] Agent tool: `find_low_stock_items`
+- [x] `Product` modeline `min_stock` alanı ekle
+- [x] `GET /reports/low-stock` endpoint'i (min_stock altındaki ürünler)
+- [x] `get_low_stock_items()` servis fonksiyonu
+- [x] Agent tool: `find_low_stock_items`
 - [ ] Cron-friendly endpoint veya startup task
 
 ---
@@ -105,11 +105,11 @@ Bu belge, projeyi gerçek bir fabrika/ERP kullanımına doğru adım adım geli�
 **Motivasyon:** Yöneticilerin sistemin genel durumunu görebilmesi için.
 
 **Yapılacaklar:**
-- [ ] `GET /reports/top-requested` — en çok talep edilen ürünler (son 30 gün)
-- [ ] `GET /reports/pending-summary` — bekleyen taleplerin özeti
-- [ ] `GET /reports/low-stock` — kritik stok altındaki ürünler
-- [ ] Bu endpoint'leri wrap eden agent tool'ları
-- [ ] Örnek: "Bu ay en çok ne talep edildi?" sorusu cevaplanabilir
+- [x] `GET /reports/top-requested` — en çok talep edilen ürünler (son 30 gün)
+- [x] `GET /reports/pending-summary` — bekleyen taleplerin özeti
+- [x] `GET /reports/low-stock` — kritik stok altındaki ürünler
+- [x] `find_low_stock_items` ve `get_report` agent tool'ları
+- [x] Örnek: "Bu ay en çok ne talep edildi?" sorusu cevaplanabilir
 
 ---
 

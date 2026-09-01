@@ -26,6 +26,7 @@ class ProductCreate(BaseModel):
     name: str
     unit: str = "piece"
     description: str | None = None
+    min_stock: int = 0
 
 
 class ProductOut(BaseModel):
@@ -34,6 +35,7 @@ class ProductOut(BaseModel):
     name: str
     description: str | None
     unit: str
+    min_stock: int
 
     model_config = {"from_attributes": True}
 
@@ -114,3 +116,30 @@ class AgentRequest(BaseModel):
 class AgentResponse(BaseModel):
     response: str
     tool_calls: list[str] = []
+
+
+# ── Reports ───────────────────────────────────────────────────────────────────
+
+class LowStockItem(BaseModel):
+    product_id: int
+    sku: str
+    name: str
+    min_stock: int
+    current_stock: int
+    shortage: int
+
+
+class TopRequestedItem(BaseModel):
+    product_id: int
+    sku: str
+    name: str
+    total_requested: int
+    request_count: int
+
+
+class PendingSummaryItem(BaseModel):
+    product_id: int
+    sku: str
+    name: str
+    pending_quantity: int
+    request_count: int

@@ -74,8 +74,8 @@ def seeded_db(db):
     db.add_all([employee, procurement, manager, warehouse_user])
 
     # Products
-    bearing = Product(id=1, sku="SKF-6205", name="SKF 6205 Bearing", unit="piece")
-    paper = Product(id=2, sku="A4-80GSM", name="A4 Paper", unit="ream")
+    bearing = Product(id=1, sku="SKF-6205", name="SKF 6205 Bearing", unit="piece", min_stock=30)
+    paper = Product(id=2, sku="A4-80GSM", name="A4 Paper", unit="ream", min_stock=50)
     db.add_all([bearing, paper])
 
     # Warehouses + Locations

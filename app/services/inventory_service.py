@@ -43,3 +43,27 @@ def find_product_locations(db: Session, product_id: int) -> list[dict]:
             }
         )
     return result
+
+
+def get_low_stock_items(db: Session) -> list[dict]:
+    """Return products whose current total stock is below their min_stock threshold."""
+    from app.models.models import Product
+    from sqlalchemy import func as sqlfunc
+
+    products = db.query(Product).filter(Product.min_stock > 0).all()
+    result = []
+    for product in products:
+        stock = check_stock(db, product.id)
+        current = stock["total_quantity"]
+        if current < product.min_stock:
+            result.append(
+                {
+                    "product_id": product.id,
+                    "sku": product.sku,
+                    "name": product.name,
+                    "min_stock": product.min_stock,
+                    "current_stock": current,
+                    "shortage": product.min_stock - current,
+                }
+            )
+    return result

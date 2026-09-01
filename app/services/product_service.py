@@ -32,6 +32,7 @@ def create_product(
     name: str,
     unit: str,
     description: str | None = None,
+    min_stock: int = 0,
 ) -> Product:
     """Create a new product. Raises 409 if SKU already exists."""
     existing = db.query(Product).filter(Product.sku == sku.strip().upper()).first()
@@ -45,6 +46,7 @@ def create_product(
         name=name.strip(),
         unit=unit.strip(),
         description=description,
+        min_stock=max(0, min_stock),
     )
     db.add(product)
     db.commit()

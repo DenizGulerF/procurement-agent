@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db.session import engine, Base
-from app.api import products, inventory, warehouse, procurement, audit, agent
+from app.api import products, inventory, warehouse, procurement, audit, agent, reports
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.include_router(inventory.router)
 app.include_router(warehouse.router)
 app.include_router(procurement.router)
 app.include_router(audit.router)
+app.include_router(reports.router)
 
 
 @app.get("/health")

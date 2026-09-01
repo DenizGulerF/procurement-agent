@@ -170,6 +170,40 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_low_stock_items",
+            "description": "Return all products whose current stock is below their minimum stock threshold (reorder point).",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_report",
+            "description": "Get a management report. Available reports: 'top_requested' (most requested products in last N days), 'pending_summary' (open procurement requests grouped by product).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "report_type": {
+                        "type": "string",
+                        "enum": ["top_requested", "pending_summary"],
+                        "description": "Which report to generate.",
+                    },
+                    "days": {
+                        "type": "integer",
+                        "description": "Look-back window in days (only for top_requested, default 30).",
+                    },
+                },
+                "required": ["report_type"],
+            },
+        },
+    },
 ]
 
 
@@ -304,6 +338,20 @@ def execute_tool(
                 }
             except Exception as e:
                 result = {"error": str(e)}
+
+    elif tool_name == "find_low_stock_items":
+        result = inventory_service.get_low_stock_items(db)
+
+    elif tool_name == "get_report":
+        from app.services import report_service
+        report_type = arguments.get("report_type")
+        if report_type == "top_requested":
+            days = arguments.get("days", 30)
+            result = report_service.get_top_requested(db, days=days)
+        elif report_type == "pending_summary":
+            result = report_service.get_pending_summary(db)
+        else:
+            result = {"error": f"Unknown report type: {report_type}"}
 
     else:
         result = {"error": f"Unknown tool: {tool_name}"}

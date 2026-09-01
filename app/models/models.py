@@ -50,6 +50,7 @@ class Product(Base):
     name = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     unit = Column(String(50), nullable=False, default="piece")
+    min_stock = Column(Integer, nullable=False, default=0)
 
     inventory = relationship("Inventory", back_populates="product")
     procurement_requests = relationship("ProcurementRequest", back_populates="product")

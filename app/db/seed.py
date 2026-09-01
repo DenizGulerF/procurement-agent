@@ -41,6 +41,7 @@ def seed():
                 name="SKF 6205 Bearing",
                 description="Deep groove ball bearing 25x52x15mm",
                 unit="piece",
+                min_stock=30,   # stok 23 < 30 → low-stock demo
             ),
             Product(
                 id=2,
@@ -48,6 +49,7 @@ def seed():
                 name="A4 Paper 80gsm",
                 description="Standard copy paper, 500 sheets per ream",
                 unit="ream",
+                min_stock=50,   # stok 200 > 50 → yeterli
             ),
             Product(
                 id=3,
@@ -55,6 +57,7 @@ def seed():
                 name="M12 Bolt DIN 933",
                 description="Stainless steel hex bolt M12x50",
                 unit="piece",
+                min_stock=100,  # stok 500 > 100 → yeterli
             ),
         ]
         db.add_all(products)
