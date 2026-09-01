@@ -2,6 +2,8 @@
 
 An AI-powered procurement and warehouse assistant demonstrating how an LLM can safely operate real business workflows through **controlled tools**, **application-level authorization**, and **human approval**.
 
+> **Tested with a local LLM** — [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) (Q5_K_M, GGUF) running on [llama.cpp](https://github.com/ggerganov/llama.cpp) server. Works with any OpenAI-compatible server (Ollama, LM Studio, etc.) as well as the OpenAI cloud API.
+
 ---
 
 ## What is ProcureAI?
@@ -19,7 +21,7 @@ User (natural language)
    FastAPI /agent/request
         │
         ▼
-   AI Agent (OpenAI tool-calling loop)
+   AI Agent (OpenAI-compatible tool-calling loop)
         │
    ┌────┴────────────────────┐
    │                         │
@@ -52,6 +54,46 @@ The LLM decides **which tool to call** and **in which order**. The application d
 - database writes
 
 The model never generates or executes arbitrary SQL.
+
+---
+
+## LLM Backend
+
+The agent uses the OpenAI Python client and works with **any OpenAI-compatible endpoint** — local or cloud. Configure via `.env`:
+
+| Variable | Description |
+|---|---|
+| `LLM_BASE_URL` | Base URL of the LLM server. Empty = OpenAI cloud. |
+| `LLM_MODEL` | Model name/ID sent to the server. |
+| `OPENAI_API_KEY` | API key. Use `local` for local servers that don't require auth. |
+
+### Tested setup — llama.cpp + Qwen3-8B
+
+```env
+LLM_BASE_URL=http://host.docker.internal:8082/v1
+LLM_MODEL=C:\Users\...\models\qwen3-8b-q5_k_m.gguf
+OPENAI_API_KEY=local
+```
+
+### Other local options
+
+```env
+# Ollama
+LLM_BASE_URL=http://host.docker.internal:11434/v1
+LLM_MODEL=qwen3
+
+# LM Studio
+LLM_BASE_URL=http://host.docker.internal:1234/v1
+LLM_MODEL=local-model
+```
+
+### OpenAI cloud
+
+```env
+LLM_BASE_URL=           # leave empty
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=sk-...
+```
 
 ---
 
@@ -121,9 +163,9 @@ Every agent tool call writes an `AuditLog` row containing:
 ## Docker Setup
 
 ```bash
-# 1. Copy environment file and set your OpenAI key
+# 1. Copy environment file
 cp .env.example .env
-# Edit .env and set OPENAI_API_KEY=sk-...
+# Edit .env — set LLM_BASE_URL + LLM_MODEL for local, or OPENAI_API_KEY for cloud
 
 # 2. Start everything
 docker compose up --build
@@ -196,17 +238,25 @@ GET /audit/{request_id}
 
 ## Example Agent Conversation
 
+Tested with **Qwen3-8B Q5_K_M** via llama.cpp:
+
 **Input:**
-> "We need 50 SKF 6205 bearings urgently for maintenance."
+> "We need 50 SKF 6205 bearings urgently for maintenance. Check stock and create a procurement request for anything missing."
+
+**Agent tool calls:** `search_product → check_stock → create_procurement_request`
 
 **Agent output:**
-> I checked our inventory for SKF 6205 bearings. We currently have **23 pieces** in stock across two locations:
-> - Warehouse A / Section B / Shelf 14 / Bin 02 — 15 pieces
-> - Warehouse B / Section A / Shelf 07 / Bin 04 — 8 pieces
->
-> Since you need 50 and we only have 23, there is a **shortage of 27 pieces**.
-> I have created procurement request #1 for **27 pieces** at HIGH priority.
-> Status: **PENDING_PROCUREMENT** — awaiting manager approval.
+> A procurement request has been created for **27 SKF 6205 bearings** (request ID: 1). The request is pending approval and will be prioritized urgently for maintenance.
+
+**Location query** — Input:
+> "Where exactly can I find the SKF 6205 bearings in the warehouse?"
+
+**Agent tool calls:** `search_product → find_product_locations`
+
+**Agent output:**
+> The SKF 6205 bearings are located in:
+> - **Warehouse A** — Section B / Shelf 14 / Bin 02 — 15 pieces
+> - **Warehouse B** — Section A / Shelf 07 / Bin 04 — 8 pieces
 
 ---
 
@@ -233,7 +283,7 @@ All 31 tests cover:
 ```
 app/
 ├── main.py              # FastAPI app, startup, router registration
-├── config.py            # Environment settings
+├── config.py            # Environment settings (LLM_BASE_URL, LLM_MODEL, etc.)
 ├── auth.py              # Role-based authorization helpers
 ├── api/
 │   ├── agent.py         # POST /agent/request
@@ -243,7 +293,7 @@ app/
 │   ├── procurement.py   # GET/POST /procurement/requests/...
 │   └── audit.py         # GET /audit/{request_id}
 ├── agent/
-│   ├── service.py       # LLM tool-calling loop
+│   ├── service.py       # LLM tool-calling loop (OpenAI-compatible)
 │   ├── tools.py         # Tool definitions + execution dispatcher
 │   └── prompts.py       # System prompt
 ├── models/
