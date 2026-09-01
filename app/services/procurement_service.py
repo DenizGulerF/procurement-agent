@@ -90,3 +90,33 @@ def reject_procurement_request(
     db.commit()
     db.refresh(req)
     return req
+
+
+def cancel_procurement_request(
+    db: Session, request_id: int, acting_user: User
+) -> ProcurementRequest:
+    """
+    The request creator or a MANAGER may cancel a PENDING_PROCUREMENT request.
+    Approved/Rejected requests cannot be cancelled.
+    """
+    req = db.query(ProcurementRequest).filter(ProcurementRequest.id == request_id).first()
+    if req is None:
+        raise HTTPException(status_code=404, detail="Procurement request not found.")
+
+    # Authorization: creator or manager
+    if acting_user.id != req.user_id and acting_user.role != UserRole.MANAGER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the request creator or a MANAGER can cancel a procurement request.",
+        )
+
+    if req.status != ProcurementStatus.PENDING_PROCUREMENT:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Request is already {req.status.value}, cannot cancel.",
+        )
+
+    req.status = ProcurementStatus.CANCELLED
+    db.commit()
+    db.refresh(req)
+    return req

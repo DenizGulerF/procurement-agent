@@ -43,3 +43,15 @@ def reject_request(
     if not acting_user:
         raise HTTPException(status_code=404, detail="Acting user not found.")
     return procurement_service.reject_procurement_request(db, request_id, acting_user)
+
+
+@router.post("/requests/{request_id}/cancel", response_model=ProcurementRequestOut)
+def cancel_request(
+    request_id: int,
+    acting_user_id: int = Query(..., description="ID of the user cancelling the request"),
+    db: Session = Depends(get_db),
+):
+    acting_user = user_service.get_user(db, acting_user_id)
+    if not acting_user:
+        raise HTTPException(status_code=404, detail="Acting user not found.")
+    return procurement_service.cancel_procurement_request(db, request_id, acting_user)

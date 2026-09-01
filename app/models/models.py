@@ -21,6 +21,7 @@ class ProcurementStatus(str, enum.Enum):
     PENDING_PROCUREMENT = "PENDING_PROCUREMENT"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
 
 
 class ProcurementPriority(str, enum.Enum):

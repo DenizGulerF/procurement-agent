@@ -21,6 +21,13 @@ class UserOut(BaseModel):
 
 # ── Product ───────────────────────────────────────────────────────────────────
 
+class ProductCreate(BaseModel):
+    sku: str
+    name: str
+    unit: str = "piece"
+    description: str | None = None
+
+
 class ProductOut(BaseModel):
     id: int
     sku: str

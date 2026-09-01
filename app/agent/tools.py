@@ -135,6 +135,41 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_product",
+            "description": (
+                "Register a new product in the system. Use this when a product cannot be found "
+                "by search_product and needs to be created before a procurement request can be opened."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sku": {"type": "string", "description": "Unique product SKU code (e.g. SIEM-S7-1200)."},
+                    "name": {"type": "string", "description": "Full product name."},
+                    "unit": {"type": "string", "description": "Unit of measure (piece, kg, litre, etc.)."},
+                    "description": {"type": "string", "description": "Optional product description."},
+                },
+                "required": ["sku", "name", "unit"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "cancel_procurement_request",
+            "description": "Cancel a PENDING_PROCUREMENT request. Only the request creator or a MANAGER may cancel.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "request_id": {"type": "integer", "description": "The procurement request ID to cancel."},
+                    "user_id": {"type": "integer", "description": "ID of the user requesting the cancellation."},
+                },
+                "required": ["request_id", "user_id"],
+            },
+        },
+    },
 ]
 
 
@@ -232,6 +267,43 @@ def execute_tool(
                 "reason": req.reason,
                 "created_at": req.created_at.isoformat(),
             }
+
+    elif tool_name == "create_product":
+        try:
+            product = product_service.create_product(
+                db=db,
+                sku=arguments["sku"],
+                name=arguments["name"],
+                unit=arguments.get("unit", "piece"),
+                description=arguments.get("description"),
+            )
+            result = {
+                "product_id": product.id,
+                "sku": product.sku,
+                "name": product.name,
+                "unit": product.unit,
+                "description": product.description,
+            }
+        except Exception as e:
+            result = {"error": str(e)}
+
+    elif tool_name == "cancel_procurement_request":
+        user = user_service.get_user(db, arguments["user_id"])
+        if not user:
+            result = {"error": f"User {arguments['user_id']} not found."}
+        else:
+            try:
+                req = procurement_service.cancel_procurement_request(
+                    db=db,
+                    request_id=arguments["request_id"],
+                    acting_user=user,
+                )
+                result = {
+                    "request_id": req.id,
+                    "status": req.status.value,
+                }
+            except Exception as e:
+                result = {"error": str(e)}
 
     else:
         result = {"error": f"Unknown tool: {tool_name}"}
