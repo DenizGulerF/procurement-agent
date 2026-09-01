@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column, Integer, String, Text, DateTime, ForeignKey,
@@ -103,7 +103,7 @@ class ProcurementRequest(Base):
         nullable=False,
         default=ProcurementStatus.PENDING_PROCUREMENT,
     )
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, server_default=func.now())
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), server_default=func.now())
 
     user = relationship("User", back_populates="procurement_requests")
     product = relationship("Product", back_populates="procurement_requests")
@@ -119,7 +119,7 @@ class AuditLog(Base):
     tool_name = Column(String(200), nullable=False)
     arguments = Column(JSON, nullable=True)
     result = Column(JSON, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, server_default=func.now())
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), server_default=func.now())
 
     user = relationship("User", back_populates="audit_logs")
     procurement_request = relationship("ProcurementRequest", back_populates="audit_logs")

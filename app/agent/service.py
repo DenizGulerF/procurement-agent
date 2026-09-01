@@ -33,11 +33,7 @@ def run_agent(db: Session, user_id: int, message: str) -> dict:
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "system",
-            "content": f"The currently acting user ID is {user_id}. Use this user_id when calling create_procurement_request.",
-        },
-        {"role": "user", "content": message},
+        {"role": "user", "content": f"[Acting user_id: {user_id}]\n\n{message}"},
     ]
 
     tool_calls_made: list[str] = []
